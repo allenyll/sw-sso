@@ -1,0 +1,18 @@
+server:
+  port: 8088
+
+sw:
+  nacos:
+    server-addr: www.allenyll.com:8848
+
+spring:
+  application:
+    name: sso-auth
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${sw.nacos.server-addr}
+      config:
+        server-addr: ${sw.nacos.server-addr}
+
+

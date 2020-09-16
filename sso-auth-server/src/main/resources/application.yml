@@ -1,0 +1,38 @@
+spring:
+  profiles:
+    active: cache
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/sweb?characterEncoding=UTF-8
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  # 引擎模板配置
+  thymeleaf:
+    cache: false # 关闭缓存
+    mode: LEGACYHTML5 # 去除htm5严格校验
+    prefix: classpath:/templates/ # 指定 thymeleaf 模板路径
+    encoding: UTF-8 # 指定字符集编码
+    suffix: .html
+  mvc:
+    static-path-pattern: /static/** # js ,css 等静态文件路径
+
+encrypt:
+  key-store:
+    location: classpath:/allenyll.jks
+    secret: allenyll
+    alias: allenyll
+    password: allenyll
+###################  mybatis-plus配置  ###################
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  typeAliasesPackage: com.sw.sso.auth.server.entity.*
+  global-config:
+    id-type: auto  #0:数据库ID自增   1:用户输入id  2:全局唯一id(IdWorker)  3:全局唯一ID(uuid)
+    db-column-underline: false  #驼峰下划线转换
+    refresh-mapper: true #刷新mapper 调试神器
+  configuration:
+    lazyLoadingEnabled: true #延时加载的开关
+    multipleResultSetsEnabled: true #开启的话，延时加载一个属性时会加载该对象全部属性，否则按需加载属性
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #打印sql语句,调试用
