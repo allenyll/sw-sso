@@ -61,7 +61,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         web.ignoring().antMatchers("/auth/login", "/loginTest",
                 "/auth/logout","/auth/loginPage","/login.html","/assets/**",
                 "/css/**","/data/**","/fonts/**","/img/**","/js/**",
-                "/assembly/**", "/layui/**");
+                "/assembly/**", "/layui/**", "/nacos/**");
     }
 
     @Bean
@@ -98,12 +98,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
-                .httpBasic()        //启用Http基本身份验证
-                .and()
+                //.httpBasic()        //启用Http基本身份验证
+                //.and()
                 .formLogin()       //启用表单身份验证
                 .and()
                 .authorizeRequests()    //限制基于Request请求访问
-                .antMatchers("/auth/**", "/logout/**", "/login")
+                .antMatchers("/auth/**", "/logout/**", "/login", "/wx/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated();       //其他请求都需要经过验证

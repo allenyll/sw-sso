@@ -1,9 +1,16 @@
-server:
+http:
   port: 8088
+
+server:
+  port: 8443
+  ssl:
+    key-store: classpath:www.allenyll.com.jks
+    key-store-password:
+    keyStoreType: JKS
 
 sw:
   nacos:
-    server-addr: www.allenyll.com:8848
+    server-addr: 127.0.0.1:8848
 
 spring:
   application:
@@ -14,5 +21,8 @@ spring:
         server-addr: ${sw.nacos.server-addr}
       config:
         server-addr: ${sw.nacos.server-addr}
+  zipkin:
+    #他不断的去跟踪所有服务，
+    discovery-client-enabled: false
 
 

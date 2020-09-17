@@ -18,7 +18,7 @@ import java.util.Map;
  */
 public class MyAuthenticationManager implements AuthenticationManager {
 
-    private static final String CLIENT_ID = "username";
+    private static final String CLIENT_ID = "client_id";
 
     private Map<String, AuthenticationProvider> providerMap = Maps.newHashMap();
 

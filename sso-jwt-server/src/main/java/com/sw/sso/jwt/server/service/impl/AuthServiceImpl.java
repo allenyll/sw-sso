@@ -66,10 +66,12 @@ public class AuthServiceImpl implements IAuthService {
         bodyMap.put("password", Collections.singletonList(password));
         bodyMap.put("grant_type", Collections.singletonList("password"));
         bodyMap.put("scope", Collections.singletonList("all"));
+        bodyMap.put("client_id", Collections.singletonList(clientId));
+        bodyMap.put("client_secret", Collections.singletonList(clientSecret));
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "multipart/form-data");
-        headers.set("authorization", AuthUtil.getHttpBasic(clientId, clientSecret));
+        // headers.set("authorization", AuthUtil.getHttpBasic(clientId, clientSecret));
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(bodyMap, headers);
 
         restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {

@@ -4,7 +4,7 @@ spring:
   main:
     allow-bean-definition-overriding: true
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/sweb?characterEncoding=UTF-8
+    url: jdbc:mysql://127.0.0.1:3306/sweb?characterEncoding=UTF-8&useUnicode=true&serverTimezone=UTC
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -53,14 +53,14 @@ auth:
     clientSecret: client
   wx:
     sessionHost: https://api.weixin.qq.com/sns/jscode2session
-    appId:
-    appSecret:
+    appId: wx95a6a02397595ace
+    appSecret: 52c970fbbf76dd8a5ea4b942fca5f6b3
     grantType: authorization_code
     systemWebUrl: http://localhost:8080/system-web/
     username: yll
-    password:
+    password: 123
     mchId:  1529366201
-    key:
+    key: e970d69349bd4b50a033386534860eb3
     orderUrl: https://api.mch.weixin.qq.com/pay/unifiedorder
     signType: MD5
     tradeType: JSAPI
