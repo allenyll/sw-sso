@@ -26,4 +26,11 @@ public interface ICustomerService extends IService<Customer> {
      * @return
      */
     Result<Customer> queryUserByOpenId(String openid);
+
+    /**
+     * 根据客户名称
+     * @param username
+     * @return
+     */
+    Customer selectUserByName(String username);
 }

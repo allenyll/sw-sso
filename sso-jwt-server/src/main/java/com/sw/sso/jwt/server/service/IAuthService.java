@@ -23,7 +23,7 @@ public interface IAuthService {
      * @param clientSecret 客户端密码
      * @return 登录信息
      */
-    AuthToken login(String username, String password, String clientId, String clientSecret);
+    AuthToken login(AuthToken authToken, String username, String password, String clientId, String clientSecret);
 
     /**
      * 登录状态认证

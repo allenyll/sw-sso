@@ -55,7 +55,7 @@ public class AuthServiceImpl implements IAuthService {
     private long ttl;
 
     @Override
-    public AuthToken login(String username, String password, String clientId, String clientSecret) {
+    public AuthToken login(AuthToken authToken, String username, String password, String clientId, String clientSecret) {
         ServiceInstance serviceInstance = loadBalancerClient.choose("sso-auth");
         URI uri = serviceInstance.getUri();
         String url = uri + "/oauth/token";
@@ -91,7 +91,6 @@ public class AuthServiceImpl implements IAuthService {
             throw new RuntimeException("申请令牌失败");
         }
 
-        AuthToken authToken = new AuthToken();
         authToken.setAccessToken((String) data.get(AuthConstants.ACCESS_TOKEN));
         authToken.setRefreshToken((String) data.get(AuthConstants.REFRESH_TOKEN));
         authToken.setJti((String) data.get(AuthConstants.JTI));

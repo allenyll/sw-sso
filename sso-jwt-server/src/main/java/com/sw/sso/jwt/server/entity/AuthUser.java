@@ -29,6 +29,8 @@ public class AuthUser implements UserDetails {
     private final Collection<? extends GrantedAuthority> authorities;
     private final Date lastPasswordResetDate;
 
+    private User user;
+
     public AuthUser(
             long id,
             String username,
@@ -40,6 +42,10 @@ public class AuthUser implements UserDetails {
         this.password = password;
         this.authorities = authorities;
         this.lastPasswordResetDate = lastPasswordResetDate;
+        this.user = new User();
+        this.user.setId(id);
+        this.user.setAccount(username);
+        this.user.setPassword(password);
     }
 
     /**
@@ -105,6 +111,14 @@ public class AuthUser implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     /**

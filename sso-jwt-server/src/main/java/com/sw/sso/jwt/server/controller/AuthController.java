@@ -66,8 +66,8 @@ public class AuthController {
         if (StringUtils.isEmpty(password)){
             throw new RuntimeException("请输入密码");
         }
-
-        AuthToken authToken = authService.login(username, password, clientId, clientSecret);
+        AuthToken authToken = new AuthToken();
+        authService.login(authToken, username, password, clientId, clientSecret);
 
         CookieUtil.setCookie(response, cookieDomain, "/", "uid", authToken.getJti(), cookieMaxAge, false);
 

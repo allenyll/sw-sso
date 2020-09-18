@@ -1,29 +1,25 @@
 package com.sw.sso.jwt.server.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.alibaba.fastjson.JSON;
 import com.sw.cache.util.CacheUtil;
 import com.sw.sso.jwt.server.entity.AuthUser;
 import com.sw.sso.jwt.server.entity.Customer;
 import com.sw.sso.jwt.server.entity.User;
-import com.sw.sso.jwt.server.entity.WxCodeResponse;
 import com.sw.sso.jwt.server.factory.AuthUserFactory;
 import com.sw.sso.jwt.server.properties.WeChatProperties;
-import com.sw.sso.jwt.server.util.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.netflix.ribbon.apache.HttpClientUtils;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.provider.ClientDetails;
+import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
-
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -37,9 +33,6 @@ import java.util.*;
 public class WxUserDetailsServiceImpl implements UserDetailsService {
 
     @Autowired
-    private RestTemplate restTemplate;
-
-    @Autowired
     WeChatProperties weChatProperties;
 
     @Autowired
@@ -49,87 +42,43 @@ public class WxUserDetailsServiceImpl implements UserDetailsService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
+    ClientDetailsService clientDetailsService;
+
+    @Autowired
     CacheUtil cacheUtil;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        WxCodeResponse wxCodeResponse = getWxCodeSession(username);
-        String openid = wxCodeResponse.getOpenid();
-        if (StringUtils.isEmpty(openid)) {
-            log.error("登陆出错:无openid信息, 返回结果: {}", wxCodeResponse);
-            throw new UsernameNotFoundException("登录出错，未查询到openid信息");
+        //取出身份，如果身份为空说明没有认证
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        //没有认证统一采用HTTP_BASIC认证，HTTP_BASIC中存储了CLIENT_ID和CLIENT_SECRET，开始认证client_id和client_secret
+        if(authentication == null){
+            ClientDetails clientDetails = clientDetailsService.loadClientByClientId(username);
+            if(clientDetails!=null){
+                //秘钥
+                String clientSecret = clientDetails.getClientSecret();
+                //静态方式
+                //return new User(username,new BCryptPasswordEncoder().encode(clientSecret), AuthorityUtils.commaSeparatedStringToAuthorityList(""));
+                //数据库查找方式
+                return new org.springframework.security.core.userdetails.User(username, clientSecret, AuthorityUtils.commaSeparatedStringToAuthorityList(""));
+            }
         }
 
-        // 根据openId查询是否存在用户
-        Result<Customer> result = customerService.queryUserByOpenId(openid);
-        if (!result.isSuccess()) {
-            log.error("根据openId查询是否存在用户失败, 返回结果: {}", result);
-            throw new UsernameNotFoundException("登录出错，根据openId查询是否存在用户失败");
-        }
-        Customer customer = result.getObject();
-        Long customerId = customer.getId();
+        Customer customer = customerService.selectUserByName(username);
         if (customer == null) {
-            customer = new Customer();
-            String name = UUID.randomUUID().toString().replace("-", "");
-            customer.setCustomerName(username);
-            //用户名MD5然后再加密作为密码
-            customer.setPassword(passwordEncoder.encode(name));
-            customer.setOpenid(openid);
-            customer.setAddTime(DateUtil.getCurrentDateTime());
-            customerId = SnowflakeIdWorker.generateId();
-            customerService.save(customer);
+            log.error("用户{}不存在", username);
+            throw new UsernameNotFoundException(String.format("No customer found with username '%s'.", username));
         }
-
-        cacheUtil.set(AuthConstants.WX_SESSION_KEY + "_" + openid, wxCodeResponse.getSessionKey());
-        cacheUtil.set(AuthConstants.WX_CURRENT_OPENID + "_" + openid, openid);
         User user = new User();
-        user.setId(customerId);
+        user.setId(customer.getId());
         user.setUserName(customer.getCustomerName());
+        user.setAccount(customer.getCustomerName());
         user.setPassword(customer.getPassword());
         List<GrantedAuthority> authorities = new ArrayList<>();
         AuthUser authUser = AuthUserFactory.create(user, authorities);
+        log.info("登录成功！用户: {}", JSON.toJSONString(authUser));
         return authUser;
     }
 
-    /**
-     * code2session
-     * @param code
-     * @return
-     */
-    private WxCodeResponse getWxCodeSession(String code) {
-
-//        String urlString = "?appid={appid}&secret={secret}&js_code={code}&grant_type={grantType}";
-//        Map<String, Object> map = new HashMap<>();
-//        map.put("appid", weChatProperties.getAppId());
-//        map.put("secret", weChatProperties.getAppSecret());
-//        map.put("code", code);
-//        map.put("grantType", weChatProperties.getGrantType());
-//        String response = restTemplate.getForObject(weChatProperties.getSessionHost() + urlString, String.class, map);
-
-        String url = weChatProperties.getSessionHost();
-        String param = "appid=" + weChatProperties.getAppId() + "&secret="+ weChatProperties.getAppSecret() +
-                "&js_code=" + code + "&grant_type=" + weChatProperties.getGrantType();
-
-        String response = HttpRequest.sendGet(url, param);
-        ObjectMapper objectMapper = new ObjectMapper();
-        WxCodeResponse wxCodeResponse;
-        try {
-            wxCodeResponse = objectMapper.readValue(response, WxCodeResponse.class);
-        } catch (IOException e) {
-            log.error(e.getMessage());
-            wxCodeResponse = null;
-            e.printStackTrace();
-        }
-
-        log.info(wxCodeResponse.toString());
-        if (null == wxCodeResponse) {
-            throw new RuntimeException("调用微信接口失败");
-        }
-        if (wxCodeResponse.getErrcode() != null) {
-            throw new RuntimeException(wxCodeResponse.getErrMsg());
-        }
-
-        return wxCodeResponse;
-    }
 
 }

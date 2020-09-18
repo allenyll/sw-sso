@@ -25,4 +25,9 @@ public class AuthToken implements Serializable {
      * jwt短令牌
      */
     private String jti;
+
+    /**
+     * 微信openid
+     */
+    private String openid;
 }

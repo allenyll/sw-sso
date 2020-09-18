@@ -61,7 +61,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         web.ignoring().antMatchers("/auth/login", "/loginTest",
                 "/auth/logout","/auth/loginPage","/login.html","/assets/**",
                 "/css/**","/data/**","/fonts/**","/img/**","/js/**",
-                "/assembly/**", "/layui/**", "/nacos/**");
+                "/assembly/**", "/layui/**", "/nacos/**", "/wx/auth/token");
     }
 
     @Bean
@@ -110,6 +110,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         //开启表单登录
         //设置访问登录页面的路径
-        http.formLogin().loginPage("/auth/loginPage");
+        http.formLogin().loginPage("/auth/loginPage, /wx/auth/token");
     }
 }
