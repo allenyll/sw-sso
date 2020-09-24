@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,6 +21,7 @@ import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -61,9 +63,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             log.error("用户{}不存在", username);
             throw new UsernameNotFoundException(String.format("No user found with username '%s'.", username));
         }
-        List<Map<String, String>> permissions = userService.getUserRoleMenuList(username);
-
-        List<GrantedAuthority> authorities = AuthUserFactory.mapToGrantedAuthorities(permissions);
+        // List<Map<String, String>> permissions = userService.getUserRoleMenuList(username);
+        GrantedAuthority admin = new SimpleGrantedAuthority("admin");
+        GrantedAuthority edit = new SimpleGrantedAuthority("edit");
+        List<GrantedAuthority> authorities = Arrays.asList(new GrantedAuthority[]{admin, edit}); // AuthUserFactory.mapToGrantedAuthorities(permissions);
         AuthUser authUser = AuthUserFactory.create(user, authorities);
         log.info("登录成功！用户: {}", JSON.toJSONString(authUser));
         return authUser;
