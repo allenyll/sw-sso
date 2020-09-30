@@ -1,6 +1,7 @@
 package com.sw.sso.jwt.server.service.impl;
 
 import com.sw.cache.util.CacheUtil;
+import com.sw.cache.util.StringUtil;
 import com.sw.sso.jwt.server.entity.AuthToken;
 import com.sw.sso.jwt.server.service.IAuthService;
 import com.sw.sso.jwt.server.util.*;
@@ -126,6 +127,40 @@ public class AuthServiceImpl implements IAuthService {
             result.setObject(resultMap);
         }
         return result;
+    }
+
+    @Override
+    public Result<Map<String, Object>> authStatus(HttpServletRequest request, HttpServletResponse response) {
+        Result<Map<String, Object>> result = new Result();
+        // 从Cookie中获取jti
+        Map<String, String> cookieMap = CookieUtil.getCookie(request, "uid");
+        String uid = "";
+        if (!CollectionUtils.isEmpty(cookieMap)) {
+            uid = cookieMap.get("uid");
+        }
+        Map<String, Object> resultMap = new HashMap<>(5);
+        if (StringUtils.isNotEmpty(uid)) {
+            // 根据uid从redis中获取token
+            String authToken = cacheUtil.get(uid, String.class);
+            if (StringUtil.isEmpty(authToken)) {
+                result.fail("token缓存失效");
+                return result;
+            } else {
+                try {
+                    // 如果令牌存在,解析jwt令牌,判断该令牌是否合法,如果令牌不合法,则向客户端返回错误提示信息
+                    Claims claims = JwtUtil.verifyToken(authToken);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    result.fail("令牌解析失败");
+                    return result;
+                }
+            }
+            resultMap.put("callback", request.getParameter("callback"));
+            return result;
+        } else {
+            result.fail("令牌解析失败");
+            return result;
+        }
     }
 
     public static void main(String[] args) {

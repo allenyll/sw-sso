@@ -32,4 +32,12 @@ public interface IAuthService {
      * @return
      */
     Result<Map<String, Object>> getAuthStatus(HttpServletRequest request, String target, HttpServletResponse response);
+
+    /**
+     * 判断登陆是否有效
+     * @param request
+     * @param response
+     * @return
+     */
+    Result<Map<String, Object>> authStatus(HttpServletRequest request, HttpServletResponse response);
 }

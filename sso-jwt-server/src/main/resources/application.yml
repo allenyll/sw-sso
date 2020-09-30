@@ -45,7 +45,7 @@ mybatis-plus:
 
 #################### 微信配置  ###################
 auth:
-  ttl: 3600  #token存储到redis的过期时间
+  ttl: 7200  #token存储到redis的过期时间
   cookieDomain: localhost
   cookieMaxAge: -1
   common:

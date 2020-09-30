@@ -1,5 +1,6 @@
 package com.sw.sso.jwt.server.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.sw.sso.jwt.server.entity.AuthToken;
 import com.sw.sso.jwt.server.service.IAuthService;
 import com.sw.sso.jwt.server.util.CookieUtil;
@@ -7,13 +8,18 @@ import com.sw.sso.jwt.server.util.Result;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 /**
@@ -41,6 +47,8 @@ public class AuthController {
 
     @Value("${auth.cookieMaxAge}")
     private int cookieMaxAge;
+
+    private static final String MEDIA_TYPE = "application/javascript;charset=UTF-8";
 
     @GetMapping("/loginPage")
     public String loginPage(@RequestParam(value = "from",required = false,defaultValue = "") String from, Model model) {
@@ -97,4 +105,41 @@ public class AuthController {
             }
         }
     }
+
+    /**
+     * 判断登陆是否有效
+     * @param request
+     * @param response
+     */
+    @RequestMapping(value = "authStatus", method = RequestMethod.GET, produces= MEDIA_TYPE)
+    public void authStatus(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        request.setCharacterEncoding("UTF-8");
+        Result<Map<String, Object>> result = authService.authStatus(request, response);
+        response.addHeader("Access-Control-Allow-Origin", "*");
+        response.setHeader("Cache-Control", "no-cache");
+        response.setHeader("Pragma", "No-cache");
+        response.setDateHeader("Expires", 0L);
+        response.setContentType("application/javascript;charset=UTF-8");
+        String callback = request.getParameter("callback");
+        if (StringUtils.isEmpty(callback)) {
+            callback = "callback";
+        }
+        if (result.isSuccess()) {
+            response.getWriter().write(callback + "({" + "\"isLogin\":" + true + "})" + ";");
+            response.getWriter().flush();
+        } else {
+            response.getWriter().write(callback + "({" + "\"isLogin\":" + false + "})" + ";");
+            response.getWriter().flush();
+        }
+    }
+
+    @GetMapping("doGet")
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException { resp.setHeader("content-type", "text/html;charset=UTF-8");
+        PrintWriter out;
+        out=resp.getWriter();
+        //获取callback值与需要返回的数据拼接，一并返回给前端。注意需要返回的数据需要用小括号“()”包裹起来
+        out.write(req.getParameter("callback") + "([{id:1, name:'奔驰'},{id:2, name:'宝马'}])");
+
+    }
+
 }
