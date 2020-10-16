@@ -40,4 +40,12 @@ public interface IAuthService {
      * @return
      */
     Result<Map<String, Object>> authStatus(HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * 登出
+     * @param request
+     * @param response
+     * @return
+     */
+    void logout(HttpServletRequest request, HttpServletResponse response);
 }

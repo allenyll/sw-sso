@@ -16,8 +16,6 @@
     <description>单点登录系统</description>
 
     <modules>
-        <module>sso-client</module>
-        <module>sso-server</module>
         <module>sso-jwt-server</module>
         <module>sso-auth-server</module>
         <module>sw-cache</module>

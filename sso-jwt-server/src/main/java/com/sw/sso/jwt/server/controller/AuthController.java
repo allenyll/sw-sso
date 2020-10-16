@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -133,13 +134,14 @@ public class AuthController {
         }
     }
 
-    @GetMapping("doGet")
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException { resp.setHeader("content-type", "text/html;charset=UTF-8");
-        PrintWriter out;
-        out=resp.getWriter();
-        //获取callback值与需要返回的数据拼接，一并返回给前端。注意需要返回的数据需要用小括号“()”包裹起来
-        out.write(req.getParameter("callback") + "([{id:1, name:'奔驰'},{id:2, name:'宝马'}])");
-
+    @RequestMapping(value = "logout", method = RequestMethod.GET)
+    public void logout(HttpSession session, @RequestParam String service, HttpServletRequest request, HttpServletResponse response) {
+        authService.logout(request, response);
+        session.invalidate();
+        try {
+            response.sendRedirect(service);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-
 }

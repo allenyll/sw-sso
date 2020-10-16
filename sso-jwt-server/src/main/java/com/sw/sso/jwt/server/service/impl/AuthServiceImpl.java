@@ -163,6 +163,19 @@ public class AuthServiceImpl implements IAuthService {
         }
     }
 
+    @Override
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        // 从Cookie中获取jti
+        Map<String, String> cookieMap = CookieUtil.getCookie(request, "uid");
+        String uid = "";
+        if (!CollectionUtils.isEmpty(cookieMap)) {
+            uid = cookieMap.get("uid");
+        }
+        if (StringUtils.isNotEmpty(uid)) {
+            cacheUtil.remove(uid);
+        }
+    }
+
     public static void main(String[] args) {
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         System.out.println(passwordEncoder.encode("52c970fbbf76dd8a5ea4b942fca5f6b3"));
