@@ -110,6 +110,8 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
             //用户名MD5然后再加密作为密码
             customer.setPassword(passwordEncoder.encode(name));
             customer.setOpenid(openid);
+            customer.setStatus("SW0001");
+            customer.setIsDelete(0);
             customer.setAddTime(DateUtil.getCurrentDateTime());
             customerId = SnowflakeIdWorker.generateId();
             customerMapper.insert(customer);
