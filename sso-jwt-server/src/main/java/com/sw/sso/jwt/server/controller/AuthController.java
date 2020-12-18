@@ -95,7 +95,7 @@ public class AuthController {
     public void getAuthStatus(@RequestParam(value = "target",required = false,defaultValue = "") String target,
                                 HttpServletRequest request, HttpServletResponse response) {
         Result<Map<String, Object>> result = authService.getAuthStatus(request, target, response);
-        if (result.isSuccess()) {
+        if (result.isSuccess() && result.getObject() != null) {
             CookieUtil.setCookie(response, cookieDomain, "/", "authToken", (String) result.getObject().get("authToken"), cookieMaxAge, false);
             // 跳转到指定地址
             try {

@@ -63,6 +63,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             log.error("用户{}不存在", username);
             throw new UsernameNotFoundException(String.format("No user found with username '%s'.", username));
         }
+        user.setAccount(String.valueOf(user.getId()));
         // List<Map<String, String>> permissions = userService.getUserRoleMenuList(username);
         GrantedAuthority admin = new SimpleGrantedAuthority("admin");
         GrantedAuthority edit = new SimpleGrantedAuthority("edit");

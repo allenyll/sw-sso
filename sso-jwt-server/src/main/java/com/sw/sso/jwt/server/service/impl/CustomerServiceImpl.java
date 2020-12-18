@@ -67,6 +67,9 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
     @Value("${auth.wx.appSecret}")
     private String clientSecret;
 
+    @Value("${auth.ttl}")
+    private long ttl;
+
     private static final Set<String> SCOPE;
 
     static {
@@ -76,27 +79,27 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
     }
 
     @Override
-    public AuthToken token(String code) {
+    public AuthToken token(String code, String mode) {
         AuthToken authToken = new AuthToken();
-        UserDetails userDetails = loadUserByJsCode(code, authToken);
+        UserDetails userDetails = loadUserByJsCode(code, mode, authToken);
         String username = userDetails.getUsername();
         String password = passwordEncoder.encode(username);
         authService.login(authToken, username, password, clientId, clientSecret);
         return authToken;
     }
 
-    private UserDetails loadUserByJsCode(String code,  AuthToken authToken) throws UsernameNotFoundException {
-        WxCodeResponse wxCodeResponse = getWxCodeSession(code);
+    private UserDetails loadUserByJsCode(String code, String mode, AuthToken authToken) throws UsernameNotFoundException {
+        WxCodeResponse wxCodeResponse = getWxCodeSession(code, mode);
         String openid = wxCodeResponse.getOpenid();
         authToken.setOpenid(openid);
-        cacheUtil.set(AuthConstants.WX_CURRENT_OPENID + "_" + openid, openid);
+        cacheUtil.set(AuthConstants.WX_CURRENT_OPENID + "_" + mode + "_" + openid, openid, ttl);
         if (StringUtils.isEmpty(openid)) {
             log.error("登陆出错:无openid信息, 返回结果: {}", wxCodeResponse);
             throw new UsernameNotFoundException("登录出错，未查询到openid信息");
         }
 
         // 根据openId查询是否存在用户
-        Result<Customer> result = this.queryUserByOpenId(openid);
+        Result<Customer> result = this.queryUserByOpenId(openid, mode);
         if (!result.isSuccess()) {
             log.error("根据openId查询是否存在用户失败, 返回结果: {}", result);
             throw new UsernameNotFoundException("登录出错，根据openId查询是否存在用户失败");
@@ -119,23 +122,29 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
             customerId = customer.getId();
         }
 
-        cacheUtil.set(AuthConstants.WX_SESSION_KEY + "_" + openid, wxCodeResponse.getSessionKey());
+        // cacheUtil.set(AuthConstants.WX_SESSION_KEY + "_" + openid, wxCodeResponse.getSessionKey());
         User user = new User();
         user.setId(customerId);
         user.setUserName(customer.getCustomerName());
-        user.setAccount(customer.getCustomerName());
+        user.setAccount(String.valueOf(customerId));
         user.setPassword(customer.getPassword());
         List<GrantedAuthority> authorities = new ArrayList<>();
         AuthUser authUser = AuthUserFactory.create(user, authorities);
         return authUser;
     }
 
-    private WxCodeResponse getWxCodeSession(String code) {
+    private WxCodeResponse getWxCodeSession(String code, String mode) {
 
         String urlString = "?appid={appid}&secret={secret}&js_code={code}&grant_type={grantType}";
         Map<String, Object> map = new HashMap<>();
-        map.put("appid", weChatProperties.getAppId());
-        map.put("secret", weChatProperties.getAppSecret());
+        String appId = weChatProperties.getAppId();
+        String secret = weChatProperties.getAppSecret();
+        if ("sweb".equals(mode)) {
+            appId = weChatProperties.getAppId2();
+            secret = weChatProperties.getAppSecret2();
+        }
+        map.put("appid", appId);
+        map.put("secret", secret);
         map.put("code", code);
         map.put("grantType", weChatProperties.getGrantType());
         String response = restTemplate.getForObject(weChatProperties.getSessionHost() + urlString, String.class, map);
@@ -162,9 +171,9 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
     }
 
     @Override
-    public Result<Customer> queryUserByOpenId(String openid) {
+    public Result<Customer> queryUserByOpenId(String openid, String mode) {
         Result<Customer> result = new Result<>();
-        String currentOpenId = cacheUtil.get(AuthConstants.WX_CURRENT_OPENID + "_" + openid);
+        String currentOpenId = cacheUtil.get(AuthConstants.WX_CURRENT_OPENID + "_" + mode + "_" + openid, String.class);
         QueryWrapper<Customer> wrapper = new QueryWrapper<>();
         if (openid.equals(currentOpenId)) {
             wrapper.eq("openid", openid);

@@ -16,28 +16,24 @@ import org.springframework.context.annotation.PropertySource;
 @Data
 @Configuration
 @PropertySource("classpath:application.yml")
-@ConfigurationProperties(prefix = "auth.wx")
 public class WeChatProperties {
 
-    @Value("${sessionHost}")
+    @Value("${auth.wx.sessionHost}")
     private String sessionHost;
 
-    @Value("${appId}")
+    @Value("${auth.wx.appId}")
     private String appId;
 
-    @Value("${appSecret}")
+    @Value("${auth.wx.appSecret}")
     private String appSecret;
 
-    @Value("${grantType}")
+    @Value("${auth.wx.grantType}")
     private String grantType;
 
-    @Value("${systemWebUrl}")
-    private String systemWebUrl;
+    @Value("${auth.wx2.appId}")
+    private String appId2;
 
-    @Value("${username}")
-    private String username;
-
-    @Value("${password}")
-    private String password;
+    @Value("${auth.wx2.appSecret}")
+    private String appSecret2;
 
 }

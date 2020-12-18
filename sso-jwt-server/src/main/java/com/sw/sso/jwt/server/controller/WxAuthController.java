@@ -30,12 +30,13 @@ public class WxAuthController {
     public Result<AuthToken> token(@RequestBody Map<String, String> param) {
         Result<AuthToken> result = new Result<>();
         String code = MapUtils.getString(param, "code");
+        String wxMode = MapUtils.getString(param, "mode");
         //校验参数
         if (StringUtils.isEmpty(code)) {
             throw new RuntimeException("小程序认证编码code不能为空");
         }
 
-        AuthToken authToken = customerService.token(code);
+        AuthToken authToken = customerService.token(code, wxMode);
         //CookieUtil.setCookie(response, cookieDomain, "/", "uid", authToken.getJti(), cookieMaxAge, false);
 
         result.setObject(authToken);

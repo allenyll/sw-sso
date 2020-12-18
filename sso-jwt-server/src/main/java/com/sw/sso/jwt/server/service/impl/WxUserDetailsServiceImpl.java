@@ -64,7 +64,7 @@ public class WxUserDetailsServiceImpl implements UserDetailsService {
             }
         }
 
-        Customer customer = customerService.selectUserByName(username);
+        Customer customer = customerService.getById(username);
         if (customer == null) {
             log.error("用户{}不存在", username);
             throw new UsernameNotFoundException(String.format("No customer found with username '%s'.", username));
@@ -72,7 +72,7 @@ public class WxUserDetailsServiceImpl implements UserDetailsService {
         User user = new User();
         user.setId(customer.getId());
         user.setUserName(customer.getCustomerName());
-        user.setAccount(customer.getCustomerName());
+        user.setAccount(String.valueOf(customer.getId()));
         user.setPassword(customer.getPassword());
         List<GrantedAuthority> authorities = new ArrayList<>();
         AuthUser authUser = AuthUserFactory.create(user, authorities);

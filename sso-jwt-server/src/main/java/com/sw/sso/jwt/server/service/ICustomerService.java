@@ -15,17 +15,18 @@ public interface ICustomerService extends IService<Customer> {
 
     /**
      * 微信小程序登陆
-     * @param code
+     * @param code 授权码
+     * @param mode 所属小程序
      * @return
      */
-    AuthToken token(String code);
+    AuthToken token(String code, String mode);
 
     /**
      * 根据openid 查询用户
      * @param openid
      * @return
      */
-    Result<Customer> queryUserByOpenId(String openid);
+    Result<Customer> queryUserByOpenId(String openid, String mode);
 
     /**
      * 根据客户名称
