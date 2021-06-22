@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisClientConfiguration;
@@ -22,31 +22,30 @@ import redis.clients.jedis.JedisPoolConfig;
  * @Date: 下午 5:25 2018/5/28 0028
  */
 @Configuration
-@PropertySource("classpath:application-cache.yml")
 public class RedisConfig {
 
-    @Value("${spring.redis.host}")
+    @Value("${spring.redis.host:}")
     private String host;
 
-    @Value("${spring.redis.port}")
+    @Value("${spring.redis.port:}")
     private int port;
 
-    @Value("${spring.redis.password}")
+    @Value("${spring.redis.password:}")
     private String password;
 
-    @Value("${spring.redis.timeout}")
+    @Value("${spring.redis.timeout:}")
     private int timeout;
 
-    @Value("${spring.redis.jedis.pool.max-idle}")
+    @Value("${spring.redis.jedis.pool.max-idle:}")
     private int maxIdle;
 
-    @Value("${spring.redis.jedis.pool.min-idle}")
+    @Value("${spring.redis.jedis.pool.min-idle:}")
     private int minIdle;
 
-    @Value("${spring.redis.jedis.pool.max-active}")
+    @Value("${spring.redis.jedis.pool.max-active:}")
     private int maxActive;
 
-    @Value("${spring.redis.jedis.pool.max-wait}")
+    @Value("${spring.redis.jedis.pool.max-wait:}")
     private int maxWait;
 
     /**
@@ -77,6 +76,7 @@ public class RedisConfig {
         //设置redis服务器的host或者ip地址
         redisStandaloneConfiguration.setHostName(host);
         redisStandaloneConfiguration.setPort(port);
+        redisStandaloneConfiguration.setPassword(password);
         //获得默认的连接池构造
         //这里需要注意的是，edisConnectionFactoryJ对于Standalone模式的没有（RedisStandaloneConfiguration，JedisPoolConfig）的构造函数，对此
         //我们用JedisClientConfiguration接口的builder方法实例化一个构造器，还得类型转换

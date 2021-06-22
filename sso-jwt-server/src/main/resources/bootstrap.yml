@@ -3,14 +3,11 @@ http:
 
 server:
   port: 8443
-  ssl:
-    key-store: classpath:www.allenyll.com.jks
-    key-store-password:
-    keyStoreType: JKS
 
 sw:
   nacos:
-    server-addr: 127.0.0.1:8848
+    server-addr: www.allenyll.com:8848
+    profile: DEV
 
 spring:
   application:
@@ -21,6 +18,27 @@ spring:
         server-addr: ${sw.nacos.server-addr}
       config:
         server-addr: ${sw.nacos.server-addr}
+        extension-configs[0]:
+          data-id: sw-db.yml
+          group: ${sw.nacos.profile}
+          refresh: true
+        extension-configs[1]:
+          data-id: sw-mybatis.yml
+          group: PROD
+          refresh: true
+        extension-configs[2]:
+          data-id: sw-ssl.yml
+          group: PROD
+          refresh: true
+        extension-configs[3]:
+          data-id: sw-sso.yml
+          group: ${sw.nacos.profile}
+          refresh: true
+        extension-configs[4]:
+          data-id: sw-cache.yml
+          group: ${sw.nacos.profile}
+          refresh: true
+
   zipkin:
     #他不断的去跟踪所有服务，
     discovery-client-enabled: false
