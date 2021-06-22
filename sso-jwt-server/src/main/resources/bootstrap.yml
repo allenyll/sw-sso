@@ -7,7 +7,7 @@ server:
 sw:
   nacos:
     server-addr: www.allenyll.com:8848
-    profile: DEV
+    profile: PROD
 
 spring:
   application:
