@@ -17,7 +17,6 @@
 
     <modules>
         <module>sso-jwt-server</module>
-        <module>sso-auth-server</module>
         <module>sw-cache</module>
     </modules>
 
